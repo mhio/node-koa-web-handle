@@ -3,7 +3,7 @@ const base62 = require('base62-random')
 const Promise = require('bluebird')
 const sample = require('lodash/sample')
 
-class KoaHandleError extends Error {}
+class KoaHandleException extends Error {}
 
 class KoaHandle {
   
@@ -115,4 +115,4 @@ Handle.tracking = function* tracking( ctx, next ){
   ctx.set('x-response-time', `${ms}ms`)
 }
 */
-module.exports = { KoaHandle, KoaHandleError }
+module.exports = { KoaHandle, KoaHandleException }
