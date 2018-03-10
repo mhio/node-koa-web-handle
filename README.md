@@ -18,18 +18,20 @@ npm install @mhio/koa-handle
 ```
 const Koa = require('koa')
 const Router = require('koa-router')
+const Views = require('koa-views')
 const KoaHandle = require('@mhio/koa-handle')
 
 let handler = {
-  ok: ()=> Promise.resolve('ok'),
-  other: ()=> Promise.resolve('other'),
+  ok: ()=> Promise.resolve('<ok>ok</ok>'),
+  template: ()=> Promise.resolve({ say: 'hello' }),
   error: ()=> Promise.reject(new Error('nope')),
 }
 
 const app = new Koa()
 const router = new Router()
+const view = Views(__dirname+'/views)
 
-app.use(KoaHandle.tracking())
+app.use(KoaHandle.tracking()) // first for logging/timings
 app.use(KoaHandle.error())
 
 router.get('/ok', KoaHandle.response(handler, 'ok'))

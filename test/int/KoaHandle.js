@@ -24,11 +24,27 @@ describe('mh::int::KoaHandle', function(){
   })
 
   it('should send a koa response', async function(){
-    let o = { ok: ()=> Promise.resolve('ok') }
-    app.use(KoaHandle.response(o, 'ok'))
+    let handle = { ok: ()=> Promise.resolve('ok') }
+    app.use(KoaHandle.response(handle, 'ok'))
     let res = await request.get('/ok')
     expect( res.text ).to.have.equal('ok')
     expect( res.status ).to.equal(200)
+  })
+
+
+  it('should send a koa response', async function(){
+    let handle = { ok: ()=> Promise.resolve('ok') }
+    app.use(KoaHandle.tracking())
+    app.use(KoaHandle.response(handle, 'ok'))
+    let res = await request.get('/ok')
+    expect( res.text ).to.have.equal('ok')
+    expect( res.status ).to.equal(200)
+    let hdr = res.headers
+    expect( hdr ).to.have.property('x-powered-by').and.be.oneOf(
+      [ 'Bananas', 'Electrons', 'Lemons', 'DeveloperTears' ]
+    )
+    expect( hdr ).to.have.property('x-transaction-id').and.match(/^[0-9a-zA-Z]+$/)
+    expect( hdr ).to.have.property('x-response-time').and.match(/^\d+ms$/)
   })
 
   xit('should debug a koa template response', async function(){

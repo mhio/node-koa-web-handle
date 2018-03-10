@@ -57,20 +57,21 @@ class KoaHandle {
    * 
   */
   static tracking(){
+    let self = this
     return Promise.coroutine(function* tracking( ctx, next ){
       const start = Date.now()
       let request_id = base62(18)
       ctx.set('x-request-id', request_id)
-      if ( ctx.get('X-Transaction-Id') === '' ){
-        ctx.set('X-Transaction-Id', request_id)
+      if ( ctx.get('x-transaction-id') === '' ){
+        ctx.set('x-transaction-id', request_id)
       } else {
-        debug('transaction id attached "%s"', ctx.get('X-Transaction-Id'))
+        debug('transaction id attached "%s"', ctx.get('x-transaction-id'))
       }
-      ctx.set('X-Powered-By', sample(Handle.powers))
+      ctx.set('x-powered-by', sample(self.powers))
       yield next()
       const ms = Date.now() - start
-      ctx.set('X-Response-Time', `${ms}ms`)
-      debug('response', ctx.get('X-Request-Id'), ms, ctx.ip, ctx.method, ctx.url)
+      ctx.set('x-response-time', `${ms}ms`)
+      debug('response', ctx.get('x-request-id'), ms, ctx.ip, ctx.method, ctx.url)
     })
   }
 
@@ -107,10 +108,10 @@ Handle.tracking = function* tracking( ctx, next ){
   } else {
     debug('transaction id attached', ctx.get('X-Transaction-Id'))
   }
-  ctx.set('X-Powered-By', 'Lemons')
+  ctx.set('x-powered-by', 'Lemons')
   await next()
   const ms = Date.now() - start
-  ctx.set('X-Response-Time', `${ms}ms`)
+  ctx.set('x-response-time', `${ms}ms`)
 }
 */
 module.exports = { KoaHandle, KoaHandleError }
