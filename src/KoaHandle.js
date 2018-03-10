@@ -53,7 +53,7 @@ class KoaHandle {
   }
 
   /**
-   * @summary  Middleware (early) to start tracking request Timestamps and ids
+   * @summary  Middleware (early) to start tracking request times and ids
    * 
   */
   static tracking(){
@@ -68,10 +68,11 @@ class KoaHandle {
         debug('transaction id attached "%s"', ctx.get('x-transaction-id'))
       }
       ctx.set('x-powered-by', sample(self.powers))
+      debug('request', request_id, ctx.ip, ctx.method, ctx.url)
       yield next()
       const ms = Date.now() - start
       ctx.set('x-response-time', `${ms}ms`)
-      debug('response', ctx.get('x-request-id'), ms, ctx.ip, ctx.method, ctx.url)
+      debug('response', ctx.get('x-request-id'), ms, ctx.url)
     })
   }
 
