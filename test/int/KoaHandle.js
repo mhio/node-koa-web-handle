@@ -23,40 +23,52 @@ describe('mh::int::KoaHandle', function(){
     server.close(done)
   })
 
-  it('should generate a koa response', async function(){
+  it('should send a koa response', async function(){
     let o = { ok: ()=> Promise.resolve('ok') }
-    app.use(KoaApiHandle.response(o, 'ok'))
+    app.use(KoaHandle.response(o, 'ok'))
     let res = await request.get('/ok')
+    expect( res.text ).to.have.equal('ok')
     expect( res.status ).to.equal(200)
-    expect( res.body ).to.have.property('data').and.equal('ok')
+  })
+
+  it('should send a koa template response', async function(){
+    let koa_views = require('koa-views')(__dirname+'/../fixture/views', {
+      extension: 'ms',
+      map: { ms: 'mustache' }
+    })
+    app.use(koa_views)
+    let o = { ok: ()=> Promise.resolve({ say: 'ok' }) }
+    app.use(KoaHandle.response(o, 'ok', { template: 'testview.ms' }))
+    let res = await request.get('/ok')
+    expect( res.text ).to.have.equal('template says: ok')
+    expect( res.status ).to.equal(200)
   })
 
   it('should generate a koa notFound response', async function(){
-    app.use(KoaApiHandle.notFound())
+    app.use(KoaHandle.notFound())
     let res = await request.get('/nonono')
-    expect( res.status ).to.equal(404)
     expect( res.body ).to.containSubset({ error: { label: 'Not Found', details: '/nonono' }})
+    expect( res.status ).to.equal(404)
   })
 
   it('should handle a koa error', async function(){
-    //app.on('error', KoaApiHandle.error())
-    app.use(KoaApiHandle.error())
+    //app.on('error', KoaHandle.error())
+    app.use(KoaHandle.error())
     app.use(ctx => {
       if ( ctx.request.url === '/error' ) throw new Error('error')
     })
     let res = await request.get('/error')
-    expect( res.status ).to.equal(500)
     expect( res.body ).to.containSubset({ error: { label: 'Request Error' }})
+    expect( res.status ).to.equal(500)
   })
 
   it('should handle a koa Exception', async function(){
-    //app.on('error', KoaApiHandle.error())
-    app.use(KoaApiHandle.error())
+    //app.on('error', KoaHandle.error())
+    app.use(KoaHandle.error())
     app.use(ctx => {
       if ( ctx.request.url === '/error' ) throw new Exception('oh no error', { simple: 'error'} )
     })
     let res = await request.get('/error')
-    expect( res.status ).to.equal(500)
     expect( res.body ).to.containSubset({
       error: { 
         label: 'Request Error',
@@ -64,6 +76,7 @@ describe('mh::int::KoaHandle', function(){
         name: 'Exception'
       }
     })
+    expect( res.status ).to.equal(500)
   })
 
 })

@@ -7,7 +7,9 @@ class KoaHandleError extends Error {}
 
 class KoaHandle {
   
-  static get powers(){ return [ 'Bananas', 'Electrons', 'Lemons', 'DeveloperTears' ] }
+  static _classInit(){
+    this.powers = [ 'Bananas', 'Electrons', 'Lemons', 'DeveloperTears' ]
+  }
 
   /**
    * @summary  Run a promise to return html
@@ -91,6 +93,7 @@ class KoaHandle {
 
 
 }
+KoaHandle._classInit()
 /*
 Handle.tracking = function* tracking( ctx, next ){
   const start = Date.now()
