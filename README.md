@@ -1,14 +1,14 @@
-@mhio/koa-api-handle
+@mhio/koa-handle
 --------------------
 
-A Koa API Handler to do all the request heavy lifting, so you just write logic
+A Koa Handlers to do all the heavy lifting, so you just write logic
 
 
 ## Install
 
 ```
-yarn add @mhio/koa-api-handle
-npm install @mhio/koa-api-handle
+yarn add @mhio/koa-handle
+npm install @mhio/koa-handle
 ```
 
 ## Usage
@@ -18,7 +18,7 @@ npm install @mhio/koa-api-handle
 ```
 const Koa = require('koa')
 const Router = require('koa-router')
-const KoaApiHandle = require('@mhio/koa-api-handle')
+const KoaHandle = require('@mhio/koa-handle')
 
 let handler = {
   ok: ()=> Promise.resolve('ok'),
@@ -29,15 +29,16 @@ let handler = {
 const app = new Koa()
 const router = new Router()
 
-app.use(KoaApiHandle.error())
+app.use(KoaHandle.tracking())
+app.use(KoaHandle.error())
 
-router.get('/ok', KoaApiHandle.response(handler, 'ok'))
-router.post('/other', KoaApiHandle.response(handler, 'other'))
-router.get('/error', KoaApiHandle.response(handler, 'error'))
+router.get('/ok', KoaHandle.response(handler, 'ok'))
+router.post('/other', KoaHandle.response(handler, 'other'))
+router.get('/error', KoaHandle.response(handler, 'error'))
 
 app.use(router.routes()).user(router.allowedMethods())
 
-app.use(KoaApiHandle.notFound())
+app.use(KoaHandle.notFound())
 
 app.listen()
 ```
