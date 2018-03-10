@@ -26,7 +26,10 @@ class KoaHandle {
   static responseTemplate( object, method, template ){
     return Promise.coroutine(function* responseTemplate( ctx, next ){
       let variables = yield object[method](ctx, next)
-      ctx.body = yield ctx.render(template, variables)  
+      debug('about to render vars', variables, template)
+      //ctx.body = yield ctx.render(template, variables)  
+      ctx.state = variables // maybe merge this?
+      return ctx.render(template)  
     })
   }
 
@@ -42,9 +45,10 @@ class KoaHandle {
    * @summary  404 middleware, after routes
    */
   static notFound(){
-    return function( req, res, next ){ // eslint-disable-line no-unused-vars
-      debug('notFound', req._mh_id, req.connection.remoteAddress, req.method, req.url)
-      res.status(404).send('<notfound/>')
+    return function( ctx, next ){ // eslint-disable-line no-unused-vars
+      debug('notFound', ctx.request._mh_id, ctx.request.ip, ctx.request.method, ctx.request.url)
+      ctx.status = 404
+      ctx.body = '<notfound/>'
     }
   }
 

@@ -31,23 +31,51 @@ describe('mh::int::KoaHandle', function(){
     expect( res.status ).to.equal(200)
   })
 
-  it('should send a koa template response', async function(){
+  xit('should debug a koa template response', async function(){
+    let koa_views = require('koa-views')(__dirname+'/../fixture/views', {
+      extension: 'hbs',
+      map: { hbs: 'handlebars' }
+    })
+    app.use(koa_views)
+    app.use((ctx) => {
+        ctx.state = { say: 'ok' }
+        return ctx.render('testview.hbs')
+    })
+    let res = await request.get('/ok')
+    expect( res.text ).to.have.equal('template says "ok"')
+    expect( res.status ).to.equal(200)
+  })
+
+  it('should send a koa template response for mustache', async function(){
     let koa_views = require('koa-views')(__dirname+'/../fixture/views', {
       extension: 'ms',
-      map: { ms: 'mustache' }
+      map: { hbs: 'mustache' }
     })
     app.use(koa_views)
     let o = { ok: ()=> Promise.resolve({ say: 'ok' }) }
-    app.use(KoaHandle.response(o, 'ok', { template: 'testview.ms' }))
+    app.use(KoaHandle.response(o, 'ok', { template: 'testview.hbs' }))
     let res = await request.get('/ok')
-    expect( res.text ).to.have.equal('template says: ok')
+    expect( res.text ).to.have.equal('template says "ok"')
+    expect( res.status ).to.equal(200)
+  })
+
+  it('should send a koa template response handlebars', async function(){
+    let koa_views = require('koa-views')(__dirname+'/../fixture/views', {
+      extension: 'hbs',
+      map: { hbs: 'handlebars' }
+    })
+    app.use(koa_views)
+    let o = { ok: ()=> Promise.resolve({ say: 'ok' }) }
+    app.use(KoaHandle.response(o, 'ok', { template: 'testview.hbs' }))
+    let res = await request.get('/ok')
+    expect( res.text ).to.have.equal('template says "ok"')
     expect( res.status ).to.equal(200)
   })
 
   it('should generate a koa notFound response', async function(){
     app.use(KoaHandle.notFound())
     let res = await request.get('/nonono')
-    expect( res.body ).to.containSubset({ error: { label: 'Not Found', details: '/nonono' }})
+    expect( res.text ).to.eql('<notfound/>')
     expect( res.status ).to.equal(404)
   })
 
@@ -55,10 +83,10 @@ describe('mh::int::KoaHandle', function(){
     //app.on('error', KoaHandle.error())
     app.use(KoaHandle.error())
     app.use(ctx => {
-      if ( ctx.request.url === '/error' ) throw new Error('error')
+      if ( ctx.request.url === '/error' ) throw new Error('errormsg')
     })
     let res = await request.get('/error')
-    expect( res.body ).to.containSubset({ error: { label: 'Request Error' }})
+    expect( res.text ).to.match(/<gahh><p>Request Error<\/p><p>[0-9a-zA-z]+<\/p><\/gahh>/)
     expect( res.status ).to.equal(500)
   })
 
@@ -66,16 +94,10 @@ describe('mh::int::KoaHandle', function(){
     //app.on('error', KoaHandle.error())
     app.use(KoaHandle.error())
     app.use(ctx => {
-      if ( ctx.request.url === '/error' ) throw new Exception('oh no error', { simple: 'error'} )
+      if ( ctx.request.url === '/error' ) throw new Exception('oh no error', { simple: 'oh simple error'} )
     })
     let res = await request.get('/error')
-    expect( res.body ).to.containSubset({
-      error: { 
-        label: 'Request Error',
-        message: 'oh no error',
-        name: 'Exception'
-      }
-    })
+    expect( res.text ).to.match(/<gahh><p>oh simple error<\/p><p>[0-9a-zA-z]+<\/p><\/gahh>/)
     expect( res.status ).to.equal(500)
   })
 
