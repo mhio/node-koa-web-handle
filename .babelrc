@@ -1,0 +1,15 @@
+{
+  "presets": [
+    [ "env", { "targets": { "node": "8" } } ]
+  ],
+  "sourceMaps": "inline",
+  "plugins": [
+    [
+      "transform-async-to-module-method",
+      {
+        "module": "bluebird",
+        "method": "coroutine"
+      }
+    ]
+  ]
+}

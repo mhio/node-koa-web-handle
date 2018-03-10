@@ -1,0 +1,53 @@
+{
+  "name": "@mhio/koa-handle",
+  "version": "0.1.0",
+  "description": "Koa API Promise Handler",
+  "main": "lib/index.js",
+  "scripts": {
+    "test": "mocha test/unit test/int",
+    "test:unit": "mocha test/int",
+    "test:int": "mocha test/unit",
+    "test:lint": "eslint src/ test/",
+    "test:watch": "nodemon -x 'mocha --bail test/unit test/int || exit 1'",
+    "release:test": "set -uex; yarn test; npm version prerelease; npm publish --access public --tag testing",
+    "release:patch": "set -uex; git pull; rm -rf node_modules; yarn; yarn run test:coverage; yarn run test:lint; yarn run build; yarn run test:built; npm version patch; git push; npm publish --access public; git push --tags",
+    "test:coverage": "set -uex; nyc _mocha test/unit test/int; nyc report -r html; nyc check-coverage",
+    "test:built": "set -uex; yarn run build; mocha test/built",
+    "watch": "nodemon -x -w . -i test/output",
+    "build": "set -uex; yarn run build:code; yarn run build:doc",
+    "build:code": "babel -d lib/ src/",
+    "build:doc": "set -uex; yarn run build:doc:html; yarn run build:doc:md",
+    "build:doc:html": "jsdoc -c .jsdoc.json -d doc/html/ src/",
+    "build:doc:md": "jsdoc2md -c ./.jsdoc.json --separators -f src/* > doc/API.md"
+  },
+  "keywords": [
+    "http",
+    "web",
+    "koa",
+    "handler",
+    "mh"
+  ],
+  "author": "Matt Hoyle",
+  "license": "MIT",
+  "devDependencies": {
+    "babel-cli": "^6.26.0",
+    "babel-plugin-transform-async-to-module-method": "^6.24.1",
+    "babel-register": "^6.26.0",
+    "chai": "^4.1.2",
+    "eslint": "^4.16.0",
+    "jsdoc": "^3.5.5",
+    "jsdoc-to-markdown": "^4.0.1",
+    "koa": "^2.4.1",
+    "mocha": "^5.0.4",
+    "nodemon": "^1.14.11",
+    "nyc": "^11.4.1",
+    "source-map-support": "^0.5.2",
+    "supertest": "^3.0.0"
+  },
+  "dependencies": {
+    "@mhio/exception": "^0.1.0",
+    "bluebird": "^3.5.1",
+    "chai-subset": "^1.6.0",
+    "lodash.foreach": "^4.5.0"
+  }
+}
