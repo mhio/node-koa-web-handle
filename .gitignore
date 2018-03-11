@@ -3,8 +3,8 @@ node_modules/
 .nyc_output/
 coverage/
 doc/html
-lib/
 pkg/
+lib/
 *.tgz
 
 yarn-error.log
