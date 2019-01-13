@@ -38,7 +38,8 @@ router.get('/ok', KoaHandle.response(handler, 'ok'))
 router.post('/other', KoaHandle.response(handler, 'other'))
 router.get('/error', KoaHandle.response(handler, 'error'))
 
-app.use(router.routes()).user(router.allowedMethods())
+app.use(router.routes())
+   .use(router.allowedMethods())
 
 app.use(KoaHandle.notFound())
 
