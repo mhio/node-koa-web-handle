@@ -101,7 +101,7 @@ class KoaHandle {
 }
 KoaHandle._classInit()
 /*
-Handle.tracking = function* tracking( ctx, next ){
+KoaHandle.tracking = function* tracking( ctx, next ){
   const start = Date.now()
   ctx.set('X-Request-Id', base62(16))
   if ( ctx.get('X-Transaction-Id') === undefined ){
