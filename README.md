@@ -19,7 +19,7 @@ npm install @mhio/koa-handle
 const Koa = require('koa')
 const Router = require('koa-router')
 const Views = require('koa-views')
-const KoaHandle = require('@mhio/koa-handle')
+const {KoaHandle} = require('@mhio/koa-handle')
 
 let handler = {
   ok: ()=> Promise.resolve('<ok>ok</ok>'),
