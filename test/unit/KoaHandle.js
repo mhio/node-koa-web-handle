@@ -20,6 +20,10 @@ describe('mh::unit::KoaHandle', function(){
     expect( KoaHandle.response() ).to.be.a('function')
   })
 
+  it('should have a tracking function', function(){
+    expect( KoaHandle.tracking ).to.be.a('function')
+  })
+
   it('should return a tracking function', function(){
     expect( KoaHandle.tracking() ).to.be.a('function')
   })
