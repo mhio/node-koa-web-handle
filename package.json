@@ -1,6 +1,6 @@
 {
   "name": "@mhio/koa-handle",
-  "version": "0.3.0-1",
+  "version": "0.3.0",
   "description": "Koa API Promise Handler",
   "main": "lib/index.js",
   "scripts": {
