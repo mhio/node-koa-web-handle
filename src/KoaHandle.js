@@ -16,7 +16,7 @@ class KoaHandle {
   */
   static responseSend( object, method ){
     return Promise.coroutine(function* responseSend( ctx, next ){
-      ctx.body = yield object[method](ctx, next)
+      ctx.body = yield object[method](ctx, next) // eslint-disable-line require-atomic-updates
     })
   }
 
@@ -28,7 +28,8 @@ class KoaHandle {
       let variables = yield object[method](ctx, next)
       debug('about to render vars', variables, template)
       //ctx.body = yield ctx.render(template, variables)  
-      ctx.state = variables // maybe merge this?
+      // maybe merge state indead?
+      ctx.state = variables  // eslint-disable-line require-atomic-updates
       return ctx.render(template)  
     })
   }
