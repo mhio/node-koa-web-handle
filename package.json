@@ -56,5 +56,12 @@
     "@mhio/exception": "~0.2.1",
     "base62-random": "^0.3.5",
     "bluebird": "^3.5.1"
+  },
+  "mocha": {
+    "require": [
+      "@babel/register",
+      "./test/mocha-setup.js"
+    ],
+    "ui": "bdd"
   }
 }
