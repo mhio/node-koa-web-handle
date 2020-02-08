@@ -1,45 +1,34 @@
 /* global expect */
-const supertest = require('supertest')
-const http = require('http')
-const Koa = require('koa')
+const sinon = require('sinon')
 const { Exception } = require('@mhio/exception')
 
+const { koaHandleSetup } = require('../fixture/koaHandleSetup')
 const { KoaHandle } = require('../../src/KoaHandle')
 
 
 describe('mh::int::KoaHandle', function(){
 
-  let app = null
-  let server = null
-  let request
+  let t = { app: null, server: null, request: null }
 
-  beforeEach(function(done){
-    app = new Koa()
-    server = http.createServer(app.callback()).listen(done)
-    request = supertest(server)
-  })
-
-  afterEach(function(done){
-    server.close(done)
-  })
+  koaHandleSetup(beforeEach, afterEach, t)
 
   it('should send a koa response', async function(){
     let handle = { ok: ()=> Promise.resolve('ok') }
-    app.use(KoaHandle.response(handle, 'ok'))
-    let res = await request.get('/ok')
-    expect( res.text ).to.have.equal('ok')
-    expect( res.status ).to.equal(200)
+    t.app.use(KoaHandle.response(handle, 'ok'))
+    t.res = await t.request.get('/ok')
+    expect( t.res.text ).to.have.equal('ok')
+    expect( t.res.status ).to.equal(200)
   })
 
 
   it('should send a koa response', async function(){
     let handle = { ok: ()=> Promise.resolve('ok') }
-    app.use(KoaHandle.tracking())
-    app.use(KoaHandle.response(handle, 'ok'))
-    let res = await request.get('/ok')
-    expect( res.text ).to.have.equal('ok')
-    expect( res.status ).to.equal(200)
-    let hdr = res.headers
+    t.app.use(KoaHandle.tracking())
+    t.app.use(KoaHandle.response(handle, 'ok'))
+    t.res = await t.request.get('/ok')
+    expect( t.res.text ).to.have.equal('ok')
+    expect( t.res.status ).to.equal(200)
+    let hdr = t.res.headers
     expect( hdr ).to.have.property('x-powered-by').and.be.oneOf(
       [ 'Bananas', 'Electrons', 'Lemons', 'DeveloperTears' ]
     )
@@ -52,14 +41,14 @@ describe('mh::int::KoaHandle', function(){
       extension: 'hbs',
       map: { hbs: 'handlebars' }
     })
-    app.use(koa_views)
-    app.use((ctx) => {
+    t.app.use(koa_views)
+    t.app.use((ctx) => {
         ctx.state = { say: 'ok' }
         return ctx.render('testview.hbs')
     })
-    let res = await request.get('/ok')
-    expect( res.text ).to.have.equal('template says "ok"')
-    expect( res.status ).to.equal(200)
+    t.res = await t.request.get('/ok')
+    expect( t.res.text ).to.have.equal('template says "ok"')
+    expect( t.res.status ).to.equal(200)
   })
 
   it('should send a koa template response for mustache', async function(){
@@ -67,12 +56,12 @@ describe('mh::int::KoaHandle', function(){
       extension: 'ms',
       map: { hbs: 'mustache' }
     })
-    app.use(koa_views)
+    t.app.use(koa_views)
     let o = { ok: ()=> Promise.resolve({ say: 'ok' }) }
-    app.use(KoaHandle.response(o, 'ok', { template: 'testview.hbs' }))
-    let res = await request.get('/ok')
-    expect( res.text ).to.have.equal('template says "ok"')
-    expect( res.status ).to.equal(200)
+    t.app.use(KoaHandle.response(o, 'ok', { template: 'testview.hbs' }))
+    t.res = await t.request.get('/ok')
+    expect( t.res.text ).to.have.equal('template says "ok"')
+    expect( t.res.status ).to.equal(200)
   })
 
   it('should send a koa template response handlebars', async function(){
@@ -80,41 +69,64 @@ describe('mh::int::KoaHandle', function(){
       extension: 'hbs',
       map: { hbs: 'handlebars' }
     })
-    app.use(koa_views)
+    t.app.use(koa_views)
     let o = { ok: ()=> Promise.resolve({ say: 'ok' }) }
-    app.use(KoaHandle.response(o, 'ok', { template: 'testview.hbs' }))
-    let res = await request.get('/ok')
-    expect( res.text ).to.have.equal('template says "ok"')
-    expect( res.status ).to.equal(200)
+    t.app.use(KoaHandle.response(o, 'ok', { template: 'testview.hbs' }))
+    t.res = await t.request.get('/ok')
+    expect( t.res.text ).to.have.equal('template says "ok"')
+    expect( t.res.status ).to.equal(200)
   })
 
   it('should generate a koa notFound response', async function(){
-    app.use(KoaHandle.notFound())
-    let res = await request.get('/nonono')
-    expect( res.text ).to.eql('<notfound/>')
-    expect( res.status ).to.equal(404)
+    t.app.use(KoaHandle.notFound())
+    t.res = await t.request.get('/nonono')
+    expect( t.res.text ).to.eql('<notfound/>')
+    expect( t.res.status ).to.equal(404)
   })
 
-  it('should handle a koa error', async function(){
+  it('should log a koa error', async function () {
     //app.on('error', KoaHandle.error())
-    app.use(KoaHandle.error())
-    app.use(ctx => {
-      if ( ctx.request.url === '/error' ) throw new Error('errormsg')
+    const errorLogger = sinon.spy()
+    t.app.use(KoaHandle.error({ logger: { error: errorLogger } }))
+    t.app.use(ctx => {
+      if (ctx.request.url === '/error') throw new Error('errormsg')
     })
-    let res = await request.get('/error')
-    expect( res.text ).to.match(/<gahh><p>Request Error<\/p><p>[0-9a-zA-z]+<\/p><\/gahh>/)
-    expect( res.status ).to.equal(500)
+    t.res = await t.request.get('/error')
+    expect(errorLogger.called).to.equal(true)
   })
 
-  it('should handle a koa Exception', async function(){
-    //app.on('error', KoaHandle.error())
-    app.use(KoaHandle.error())
-    app.use(ctx => {
-      if ( ctx.request.url === '/error' ) throw new Exception('oh no error', { simple: 'oh simple error'} )
+  describe('NODE_ENV === production', function(){
+    let old_process_env_NODE_ENV
+    before(function(){
+      old_process_env_NODE_ENV = process.env.NODE_ENV
+      process.env.NODE_ENV = 'production'
     })
-    let res = await request.get('/error')
-    expect( res.text ).to.match(/<gahh><p>oh simple error<\/p><p>[0-9a-zA-z]+<\/p><\/gahh>/)
-    expect( res.status ).to.equal(500)
+    after(function(){
+      process.env.NODE_ENV = old_process_env_NODE_ENV
+    })
+
+    it('should handle a koa error in production', async function(){
+      //app.on('error', KoaHandle.error())
+      t.app.use(KoaHandle.error({ logger: { error: function(){} }}))
+      t.app.use(ctx => {
+        if ( ctx.request.url === '/error' ) throw new Error('errormsg')
+      })
+      t.res = await t.request.get('/error')
+      expect( t.res.text ).to.match(/<gahh><h3>Error<\/h3><p>The request failed<\/p><p>ID: [0-9a-zA-z]+<\/p><\/gahh>/)
+      expect( t.res.status ).to.equal(500)
+    })
+
+    it('should handle a koa Exception in production', async function () {
+      //app.on('error', KoaHandle.error())
+      t.app.use(KoaHandle.error({ logger: { error: function () { } } }))
+      t.app.use(ctx => {
+        if (ctx.request.url === '/error') throw new Exception('oh no error', { simple: 'oh simple error' })
+      })
+      t.res = await t.request.get('/error')
+      expect(t.res.text).to.match(/<gahh><h3>Error<\/h3><p>oh simple error<\/p><p>ID: [0-9a-zA-z]+<\/p><\/gahh>/)
+      expect(t.res.status).to.equal(500)
+    })
+
   })
 
 })
