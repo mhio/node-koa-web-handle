@@ -47,13 +47,13 @@ export const koaHandleSetup = (mochaBeforeFnRef, mochaAfterFnRef, test_obj) => {
   mochaBeforeFnRef(function (done) {
     // Inject a logger that matches pino API so we can dump errors after failures
     test_obj.logger = {
-      trace(...args) {
+      trace(/* ...args */) {
         // debug('trace', ...args)
       }, 
-      debug(...args) {
+      debug(/* ...args */) {
         // debug('debug', ...args)
       },
-      info(...args) {
+      info(/* ...args */) {
         // debug('info', ...args)
       },
       warn(...args) {
