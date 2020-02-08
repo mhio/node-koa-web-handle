@@ -69,8 +69,10 @@ class KoaHandle {
     const power = this.power
     return Promise.coroutine(function* tracking( ctx, next ){
       const start = Date.now()
+      
       let request_id = base62(18)
       ctx.set('x-request-id', request_id)
+      
       if ( ctx.get('x-transaction-id') === '' ){
         ctx.set('x-transaction-id', request_id)
       } else {
@@ -78,11 +80,25 @@ class KoaHandle {
       }
       ctx.set('x-powered-by', power)
       debug('tracking request', request_id, ctx.ip, ctx.method, ctx.url)
+      
       yield next()
+      
       const ms = Date.now() - start
       ctx.set('x-response-time', `${ms}ms`)
       debug('tracking response', ctx.get('x-request-id'), ms, ctx.url)
     })
+  }
+
+  /**
+   * 
+   * @param {object} options 
+   * @param {object} options.logger         - Logger instance following pino API
+   * @return {object}                       - Pinoish logger object
+   */
+  static setOptionsLogger(options){
+    if ( options.logger === false ) return { error: function(){} }
+    if ( options.logger ) return options.logger
+    return console
   }
 
   /**
@@ -93,7 +109,9 @@ class KoaHandle {
    * @param {object} options.template_dev   - Dev template to use in !production (recieves `message`, `error`, `ctx`)
    */
   static error(options = {}){
-    const loggerObj = options.logger || console
+    const loggerObj = this.setOptionsLogger(options)
+    const error_template = options.error_template
+    const error_template_development = options.error_template_development 
     return Promise.coroutine(function* error(ctx, next){
       try {
         yield next()
@@ -107,9 +125,11 @@ class KoaHandle {
         let message = error.simple || 'The request failed'
         ctx.status = error.status
         if (process.env.NODE_ENV === 'production') {
-          ctx.body = `<gahh><h3>Error</h3><p>${message}</p><p>ID: ${error.id}</p></gahh>`
+          ctx.body = error_template && error_template({ message, error, ctx })
+            || `<gahh><h3>Error</h3><p>${message}</p><p>ID: ${error.id}</p></gahh>`
         } else {
-          ctx.body = `<gahh><h3>Error</h3><p>${message}</p><pre>${JSON.stringify(error, undefined, 2)}</pre></gahh>`
+          ctx.body = error_template_development && error_template_development({ message, error, ctx })
+            || `<gahh><h3>Error</h3><p>${message}</p><pre>${JSON.stringify(error, undefined, 2)}</pre></gahh>`
         }
       }
     })
