@@ -38,7 +38,7 @@
     "babel-eslint": "^10.0.1",
     "chai": "^4.1.2",
     "chai-subset": "^1.6.0",
-    "eslint": "^6.4.0",
+    "eslint": "^6.8.0",
     "handlebars": "^4.5.3",
     "jsdoc": "^3.5.5",
     "jsdoc-to-markdown": "^5.0.1",
