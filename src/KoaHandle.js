@@ -25,7 +25,7 @@ class KoaHandle {
    */
   static views({ engine, path: views_path, extension }){
     if (extension) {
-      if (!extension.replace) throw new Error(`Extension doesn\'t appear to be a string [${extension}]`)
+      if (!extension.replace) throw new Error(`Extension doesn't appear to be a string [${extension}]`)
       this.views_extension = extension.replace(/^\./, '')
     }
     if (engine){ 

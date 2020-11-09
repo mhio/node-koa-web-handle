@@ -1,7 +1,6 @@
 /* global expect */
 const path = require('path')
 const sinon = require('sinon')
-const mustache = require('mustache')
 const { Exception } = require('@mhio/exception')
 
 const { koaHandleSetup } = require('../fixture/koaHandleSetup')
