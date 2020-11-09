@@ -83,6 +83,14 @@ describe('mh::int::KoaHandle', function(){
     t.res = await t.request.get('/error')
     expect(errorLogger.called).to.equal(true)
   })
+ 
+  it('should test a view setup', async function(){
+    let o = { ok: ()=> Promise.resolve({ say: 'yabbadabba' }) }
+    KoaHandle.views({ engine: 'mustache', path: `${__dirname}/../fixture/views`, extension: 'ms' })
+    t.app.use(KoaHandle.responseTemplate(o, 'ok', 'testview'))
+    t.res = await t.request.get('/error')
+    expect( t.res.text ).to.equal('template says "yabbadabba"')
+  })
 
   describe('NODE_ENV === production', function(){
     let old_process_env_NODE_ENV
@@ -117,5 +125,6 @@ describe('mh::int::KoaHandle', function(){
     })
 
   })
+  
 
 })

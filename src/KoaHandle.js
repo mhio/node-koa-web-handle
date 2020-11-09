@@ -1,4 +1,5 @@
 const fs = require('fs')
+const path = require('path')
 const debug = require('debug')('mh:KoaHandle')
 const base62 = require('base62-random')
 const Promise = require('bluebird')
@@ -16,8 +17,27 @@ class KoaHandle {
     this.power = this.powers[random_power_i]
     this.views_path = null
     this.views_engine = null
+    this.views_extension = null
   }
 
+  /**
+   * Setup view engine and path. Only a single 
+   */
+  static views({ engine, path: views_path, extension }){
+    if (extension) {
+      if (!extension.replace) throw new Error(`Extension doesn\'t appear to be a string [${extension}]`)
+      this.views_extension = extension.replace(/^\./, '')
+    }
+    if (engine){ 
+      if (!cons[engine]) throw new Error(`No template engine [${engine}] available in consolidate`)
+      this.views_engine = engine
+    }
+    if (views_path) {
+      if (!pathExists(views_path)) throw new Error(`No path exists [${views_path}] to lookup templates`)
+      this.views_path = views_path
+    }
+  }
+ 
   /**
    * @summary  Run a promise to return html
    */
@@ -34,10 +54,13 @@ class KoaHandle {
    * @param {object} template     - handlebars template 
    */
   static responseTemplate( object, method, template, engine_override ){
-    const template_path = (this.views_path)
-      ? path.join(this.views_path, template)
+    const template_with_ext = (this.views_extension)
+      ? `${template}.${this.views_extension}`
       : template
-    const template_file_exists = fileExists(template)
+    const template_path = (this.views_path)
+      ? path.join(this.views_path, template_with_ext)
+      : template_with_ext
+    const template_file_exists = pathExists(template_path)
     if (!template || !template_file_exists) {
       if (!this.views_path) throw new Error(`No views path has been set on KoaHandle to find [${template}]`)
       throw new Error(`Couldn't find template [${template}] in [${this.views_path}]`)
@@ -52,15 +75,17 @@ class KoaHandle {
       //ctx.body = yield ctx.render(template, variables)  
       // maybe merge state indead?
       ctx.state = variables  // eslint-disable-line require-atomic-updates
-      return ctx.body = await cons[engine](template, variables)
+      const res = await cons[engine](template_path, variables)
+      debug('responseTemplate res',res)
+      ctx.body = res
     }
   }
 
   /**
    * @summary  Handle the response with either a template or straight response
    */
-  static response( object, method, options = {} ){
-    if ( options.template ) return this.responseTemplate(object, method, options.template, options.engine)
+  static response( object, method, options ){
+    if ( options && options.template ) return this.responseTemplate(object, method, options.template, options.engine)
     return this.responseSend(object, method)
   }
 
@@ -171,7 +196,7 @@ KoaHandle.tracking = function* tracking( ctx, next ){
 }
 */
 
-function fileExists(test_path){
+function pathExists(test_path){
   try {
     fs.statSync(test_path)
     return true
@@ -186,5 +211,5 @@ module.exports = {
   KoaHandle,
   KoaHandleException,
   Exception,
-  fileExists,
+  pathExists,
 }
