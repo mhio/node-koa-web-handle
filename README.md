@@ -1,4 +1,4 @@
-@mhio/koa-handle
+@mhio/koa-handle | [git](https://github.com/mhio/node-koa-web-handle) | [npm](https://www.npmjs.com/package/@mhio/koa-web-handle)
 --------------------
 
 A Koa Handler to do all the heavy lifting, so you just write logic
@@ -7,8 +7,8 @@ A Koa Handler to do all the heavy lifting, so you just write logic
 ## Install
 
 ```
-yarn add @mhio/koa-handle
-npm install @mhio/koa-handle
+yarn add @mhio/koa-web-handle
+npm install @mhio/koa-web-handle
 ```
 
 ## Usage
@@ -18,7 +18,7 @@ npm install @mhio/koa-handle
 ```
 const Koa = require('koa')
 const Router = require('koa-router')
-const {KoaHandle} = require('@mhio/koa-handle')
+const {KoaWebHandle} = require('@mhio/koa-web-handle')
 
 let handler = {
   ok: ()=> Promise.resolve('<ok>ok</ok>'),
@@ -44,3 +44,16 @@ app.use(KoaHandle.notFound())
 
 app.listen()
 ```
+
+
+## Related
+
+[npm](https://www.npmjs.com/package/@mhio/koa-web-handle)
+
+[@mhio/koa-api](https://www.npmjs.com/package/@mhio/koa-api) /
+ [@mhio/koa-api-handle](https://www.npmjs.com/package/@mhio/koa-api-handle)
+
+[@mhio/koa-web](https://www.npmjs.com/package/@mhio/koa-web) /
+ [@mhio/koa-web-handle](https://www.npmjs.com/package/@mhio/koa-web-handle)
+
+
