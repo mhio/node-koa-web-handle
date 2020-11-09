@@ -2,6 +2,7 @@ const fs = require('fs')
 const path = require('path')
 const cons = require('consolidate')
 const { KoaGenericHandle } = require('@mhio/koa-generic-handle')
+const { getRandomBase62String } = KoaGenericHandle
 
 const debug = require('debug')('mh:KoaWebHandle')
 
@@ -102,6 +103,52 @@ class KoaWebHandle extends KoaGenericHandle {
     }
   }
 
+  /**
+   * 
+   * @param {object} options 
+   * @param {object} options.logger         - Logger instance following pino API
+   * @return {object}                       - Pinoish logger object
+   */
+  static setOptionsLogger(options){
+    if ( options.logger === false ) return { error: function(){} }
+    if ( options.logger ) return options.logger
+    return console
+  }
+
+  /**
+   * @summary  Error middleware
+   * @param {object} options                - Options
+   * @param {object} options.logger         - Logger instance following pino API
+   * @param {object} options.template       - Template to use in production (recieves `message`, `error`, `ctx`)
+   * @param {object} options.template_dev   - Dev template to use in !production (recieves `message`, `error`, `ctx`)
+   */
+  static errors(options = {}){
+    const loggerObj = this.setOptionsLogger(options)
+    const error_template = options.error_template
+    const error_template_development = options.error_template_development 
+    return async function error(ctx, next){
+      try {
+        await next()
+      } catch (error) {
+        debug('KoaHandle request caught error', error.status, error.message, error)
+        if (!error.status) error.status = 500
+        if (!error.label)  error.label = 'Request Error'
+        // if (!error.simple) error.simple = 'Request Error'
+        if (!error.id)     error.id = getRandomBase62String(12)
+        loggerObj.error('KoaHandle caught error', error)
+        let message = error.simple || 'The request failed'
+        ctx.status = error.status
+        if (process.env.NODE_ENV === 'production') {
+          ctx.body = error_template && error_template({ message, error, ctx })
+            || `<gahh><h3>Error</h3><p>${message}</p><p>ID: ${error.id}</p></gahh>`
+        } else {
+          ctx.body = error_template_development && error_template_development({ message, error, ctx })
+            || `<gahh><h3>Error</h3><p>${message}</p><pre>${JSON.stringify(error, undefined, 2)}</pre></gahh>`
+        }
+      }
+    }
+  }
+
 }
 KoaWebHandle._initialiseClass()
 
@@ -118,6 +165,5 @@ function pathExists(test_path){
 
 module.exports = {
   KoaWebHandle,
-  Exception,
   pathExists,
 }
