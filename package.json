@@ -1,7 +1,7 @@
 {
-  "name": "@mhio/koa-handle",
-  "version": "0.4.0",
-  "description": "Koa API Promise Handler",
+  "name": "@mhio/koa-web-handle",
+  "version": "0.5.0-0",
+  "description": "Koa Web template/response handler",
   "main": "lib/index.js",
   "scripts": {
     "test": "mocha test/unit test/int",
@@ -53,6 +53,7 @@
   },
   "dependencies": {
     "@mhio/exception": "~0.2.1",
+    "@mhio/koa-generic-handle": "^0.1.1",
     "base62-random": "^0.3.5",
     "bluebird": "^3.5.1",
     "consolidate": "^0.16.0"
