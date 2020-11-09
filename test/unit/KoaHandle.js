@@ -13,7 +13,8 @@ describe('mh::unit::KoaHandle', function(){
   })
 
   it('should return a responseTemplate function', function(){
-    expect( KoaHandle.responseTemplate() ).to.be.a('function')
+    const template = [__dirname,'..','fixture','views','testview.ms'].join('/')
+    expect( KoaHandle.responseTemplate('a','b',template,'ejs') ).to.be.a('function')
   })
 
   it('should return a response function', function(){

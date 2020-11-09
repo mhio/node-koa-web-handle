@@ -39,13 +39,12 @@
     "chai": "^4.1.2",
     "chai-subset": "^1.6.0",
     "eslint": "7.13.0",
-    "handlebars": "^4.5.3",
+    "handlebars": "~4.7.6",
     "jsdoc": "^3.5.5",
     "jsdoc-to-markdown": "~6.0.1",
     "koa": "^2.4.1",
-    "koa-views": "^6.1.4",
-    "mocha": "^7.0.1",
-    "mustache": "^3.0.0",
+    "mocha": "~8.2.1",
+    "mustache": "~4.0.1",
     "nodemon": "~2.0.6",
     "nyc": "~15.1.0",
     "sinon": "^8.1.1",
@@ -55,7 +54,8 @@
   "dependencies": {
     "@mhio/exception": "~0.2.1",
     "base62-random": "^0.3.5",
-    "bluebird": "^3.5.1"
+    "bluebird": "^3.5.1",
+    "consolidate": "^0.16.0"
   },
   "mocha": {
     "require": [

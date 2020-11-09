@@ -1,5 +1,7 @@
 /* global expect */
+const path = require('path')
 const sinon = require('sinon')
+const mustache = require('mustache')
 const { Exception } = require('@mhio/exception')
 
 const { koaHandleSetup } = require('../fixture/koaHandleSetup')
@@ -37,11 +39,6 @@ describe('mh::int::KoaHandle', function(){
   })
 
   xit('should debug a koa template response', async function(){
-    let koa_views = require('koa-views')(__dirname+'/../fixture/views', {
-      extension: 'hbs',
-      map: { hbs: 'handlebars' }
-    })
-    t.app.use(koa_views)
     t.app.use((ctx) => {
         ctx.state = { say: 'ok' }
         return ctx.render('testview.hbs')
@@ -52,26 +49,18 @@ describe('mh::int::KoaHandle', function(){
   })
 
   it('should send a koa template response for mustache', async function(){
-    let koa_views = require('koa-views')(__dirname+'/../fixture/views', {
-      extension: 'ms',
-      map: { hbs: 'mustache' }
-    })
-    t.app.use(koa_views)
     let o = { ok: ()=> Promise.resolve({ say: 'ok' }) }
-    t.app.use(KoaHandle.response(o, 'ok', { template: 'testview.hbs' }))
+    const template = path.join(__dirname,'..','fixture','views','testview.ms')
+    t.app.use(KoaHandle.response(o, 'ok', { template, engine: 'mustache' }))
     t.res = await t.request.get('/ok')
     expect( t.res.text ).to.have.equal('template says "ok"')
     expect( t.res.status ).to.equal(200)
   })
 
   it('should send a koa template response handlebars', async function(){
-    let koa_views = require('koa-views')(__dirname+'/../fixture/views', {
-      extension: 'hbs',
-      map: { hbs: 'handlebars' }
-    })
-    t.app.use(koa_views)
     let o = { ok: ()=> Promise.resolve({ say: 'ok' }) }
-    t.app.use(KoaHandle.response(o, 'ok', { template: 'testview.hbs' }))
+    const template = path.join(__dirname,'..','fixture','views','testview.hbs')
+    t.app.use(KoaHandle.response(o, 'ok', { template, engine: 'handlebars' }))
     t.res = await t.request.get('/ok')
     expect( t.res.text ).to.have.equal('template says "ok"')
     expect( t.res.status ).to.equal(200)

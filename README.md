@@ -1,7 +1,7 @@
 @mhio/koa-handle
 --------------------
 
-A Koa Handlers to do all the heavy lifting, so you just write logic
+A Koa Handler to do all the heavy lifting, so you just write logic
 
 
 ## Install
@@ -18,7 +18,6 @@ npm install @mhio/koa-handle
 ```
 const Koa = require('koa')
 const Router = require('koa-router')
-const Views = require('koa-views')
 const {KoaHandle} = require('@mhio/koa-handle')
 
 let handler = {
@@ -29,13 +28,13 @@ let handler = {
 
 const app = new Koa()
 const router = new Router()
-const view = Views(__dirname+'/views)
 
+KoaHandle.views({ path: '../views', engine: 'mustache', extension: 'ms' })
 app.use(KoaHandle.tracking()) // first for logging/timings
 app.use(KoaHandle.error())
 
 router.get('/ok', KoaHandle.response(handler, 'ok'))
-router.post('/other', KoaHandle.response(handler, 'other'))
+router.post('/rendered', KoaHandle.response(handler, 'other', { template: 'helloer' }))
 router.get('/error', KoaHandle.response(handler, 'error'))
 
 app.use(router.routes())

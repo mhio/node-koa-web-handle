@@ -1,7 +1,10 @@
+const fs = require('fs')
 const debug = require('debug')('mh:KoaHandle')
 const base62 = require('base62-random')
 const Promise = require('bluebird')
 const { Exception } = require('@mhio/exception')
+
+const cons = require('consolidate')
 
 class KoaHandleException extends Exception {}
 
@@ -11,15 +14,17 @@ class KoaHandle {
     this.powers = [ 'Bananas', 'Electrons', 'Lemons', 'DeveloperTears' ]
     const random_power_i = Math.floor(Math.random() * this.powers.length)
     this.power = this.powers[random_power_i]
+    this.views_path = null
+    this.views_engine = null
   }
 
   /**
    * @summary  Run a promise to return html
    */
   static responseSend( object, method ){
-    return Promise.coroutine(function* responseSend( ctx, next ){
-      ctx.body = yield object[method](ctx, next) // eslint-disable-line require-atomic-updates
-    })
+    return async function(ctx,next){
+      ctx.body = await object[method](ctx, next) // eslint-disable-line require-atomic-updates
+    }
   }
 
   /**
@@ -28,22 +33,34 @@ class KoaHandle {
    * @param {string} method       - The method to call on `object`
    * @param {object} template     - handlebars template 
    */
-  static responseTemplate( object, method, template ){
-    return Promise.coroutine(function* responseTemplate( ctx, next ){
-      let variables = yield object[method](ctx, next)
-      debug('responseTemplate about to render vars', variables, template)
+  static responseTemplate( object, method, template, engine_override ){
+    const template_path = (this.views_path)
+      ? path.join(this.views_path, template)
+      : template
+    const template_file_exists = fileExists(template)
+    if (!template || !template_file_exists) {
+      if (!this.views_path) throw new Error(`No views path has been set on KoaHandle to find [${template}]`)
+      throw new Error(`Couldn't find template [${template}] in [${this.views_path}]`)
+    }
+    if (!engine_override && !this.views_engine) {
+      throw new Error('No views engine has been set on KoaHandle')
+    }
+    const engine = engine_override || this.views_engine
+    return async function(ctx,next){
+      const variables = await object[method](ctx, next)
+      debug('responseTemplate about to render vars', variables, template_path, engine)
       //ctx.body = yield ctx.render(template, variables)  
       // maybe merge state indead?
       ctx.state = variables  // eslint-disable-line require-atomic-updates
-      return ctx.render(template)
-    })
+      return ctx.body = await cons[engine](template, variables)
+    }
   }
 
   /**
    * @summary  Handle the response with either a template or straight response
    */
   static response( object, method, options = {} ){
-    if ( options.template ) return this.responseTemplate(object, method, options.template)
+    if ( options.template ) return this.responseTemplate(object, method, options.template, options.engine)
     return this.responseSend(object, method)
   }
 
@@ -153,8 +170,21 @@ KoaHandle.tracking = function* tracking( ctx, next ){
   ctx.set('x-response-time', `${ms}ms`)
 }
 */
+
+function fileExists(test_path){
+  try {
+    fs.statSync(test_path)
+    return true
+  } 
+  catch (err) {
+    if (err.code !== 'ENOENT') throw err
+    return false
+  }
+}
+
 module.exports = {
   KoaHandle,
   KoaHandleException,
   Exception,
+  fileExists,
 }
