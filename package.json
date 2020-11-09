@@ -27,7 +27,7 @@
     "handler",
     "mh"
   ],
-  "author": "Matt Hoyle",
+  "author": "mhio",
   "license": "MIT",
   "devDependencies": {
     "@babel/cli": "~7.12.1",
@@ -36,6 +36,7 @@
     "@babel/preset-env": "~7.12.1",
     "@babel/register": "~7.12.1",
     "babel-eslint": "10.1.0",
+    "bluebird": "^3.5.1",
     "chai": "^4.1.2",
     "chai-subset": "^1.6.0",
     "eslint": "7.13.0",
@@ -52,10 +53,7 @@
     "supertest": "4.0.2"
   },
   "dependencies": {
-    "@mhio/exception": "~0.2.1",
     "@mhio/koa-generic-handle": "^0.1.1",
-    "base62-random": "^0.3.5",
-    "bluebird": "^3.5.1",
     "consolidate": "^0.16.0"
   },
   "mocha": {
