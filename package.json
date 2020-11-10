@@ -1,6 +1,6 @@
 {
   "name": "@mhio/koa-web-handle",
-  "version": "0.5.1",
+  "version": "0.5.2",
   "description": "Koa Web template/response handler",
   "main": "lib/index.js",
   "scripts": {
