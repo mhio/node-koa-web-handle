@@ -1,4 +1,4 @@
-@mhio/koa-handle | [git](https://github.com/mhio/node-koa-web-handle) | [npm](https://www.npmjs.com/package/@mhio/koa-web-handle)
+@mhio/koa-handle | [web](https://mhio.github.io/app/) | [git](https://github.com/mhio/node-koa-web-handle) | [npm](https://www.npmjs.com/package/@mhio/koa-web-handle)
 --------------------
 
 A Koa Handler to do all the heavy lifting, so you just write logic
@@ -55,5 +55,4 @@ app.listen()
 
 [@mhio/koa-web](https://www.npmjs.com/package/@mhio/koa-web) /
  [@mhio/koa-web-handle](https://www.npmjs.com/package/@mhio/koa-web-handle)
-
 
