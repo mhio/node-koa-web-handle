@@ -13,9 +13,22 @@ describe('mh::int::KoaWebHandle', function(){
 
   koaHandleSetup(beforeEach, afterEach, t)
 
-  it('should send a koa response', async function(){
-    let handle = { ok: ()=> Promise.resolve('ok') }
-    t.app.use(KoaWebHandle.response(handle, 'ok'))
+  it('should send a koa response fn', async function(){
+    let handle = ()=> Promise.resolve('ok')
+    t.app.use(KoaWebHandle.response(handle))
+    t.res = await t.request.get('/ok')
+    expect( t.res.text ).to.have.equal('ok')
+    expect( t.res.status ).to.equal(200)
+  })
+
+  it('should send a koa response object.fn', async function(){
+    const handle = {
+      aok: 'ok',
+      ok: function(){
+        return Promise.resolve(this.aok)
+      }
+    }
+    t.app.use(KoaWebHandle.responseBind(handle, 'ok'))
     t.res = await t.request.get('/ok')
     expect( t.res.text ).to.have.equal('ok')
     expect( t.res.status ).to.equal(200)
@@ -25,7 +38,7 @@ describe('mh::int::KoaWebHandle', function(){
   it('should send a koa response', async function(){
     let handle = { ok: ()=> Promise.resolve('ok') }
     t.app.use(KoaWebHandle.tracking())
-    t.app.use(KoaWebHandle.response(handle, 'ok'))
+    t.app.use(KoaWebHandle.responseBind(handle, 'ok'))
     t.res = await t.request.get('/ok')
     expect( t.res.text ).to.have.equal('ok')
     expect( t.res.status ).to.equal(200)
@@ -37,7 +50,7 @@ describe('mh::int::KoaWebHandle', function(){
   it('should send a koa response with powered by', async function(){
     let handle = { ok: ()=> Promise.resolve('ok') }
     t.app.use(KoaWebHandle.poweredBy('meeeee'))
-    t.app.use(KoaWebHandle.response(handle, 'ok'))
+    t.app.use(KoaWebHandle.responseBind(handle, 'ok'))
     t.res = await t.request.get('/ok')
     expect( t.res.text ).to.have.equal('ok')
     expect( t.res.status ).to.equal(200)
@@ -55,19 +68,28 @@ describe('mh::int::KoaWebHandle', function(){
     expect( t.res.status ).to.equal(200)
   })
 
-  it('should send a koa template response for mustache', async function(){
+  it('should send a koa template response bind for mustache', async function(){
     let o = { ok: ()=> Promise.resolve({ say: 'ok' }) }
     const template = path.join(__dirname,'..','fixture','views','testview.ms')
-    t.app.use(KoaWebHandle.response(o, 'ok', { template, engine: 'mustache' }))
+    t.app.use(KoaWebHandle.responseBind(o, 'ok', { template, engine: 'mustache' }))
     t.res = await t.request.get('/ok')
     expect( t.res.text ).to.have.equal('template says "ok"')
     expect( t.res.status ).to.equal(200)
   })
 
-  it('should send a koa template response handlebars', async function(){
+  it('should send a koa template response fn handlebars', async function(){
+    const ok = ()=> Promise.resolve({ say: 'ok' })
+    const template = path.join(__dirname,'..','fixture','views','testview.hbs')
+    t.app.use(KoaWebHandle.response(ok, { template, engine: 'handlebars' }))
+    t.res = await t.request.get('/ok')
+    expect( t.res.text ).to.have.equal('template says "ok"')
+    expect( t.res.status ).to.equal(200)
+  })
+
+  it('should send a koa template response bind handlebars', async function(){
     let o = { ok: ()=> Promise.resolve({ say: 'ok' }) }
     const template = path.join(__dirname,'..','fixture','views','testview.hbs')
-    t.app.use(KoaWebHandle.response(o, 'ok', { template, engine: 'handlebars' }))
+    t.app.use(KoaWebHandle.responseBind(o, 'ok', { template, engine: 'handlebars' }))
     t.res = await t.request.get('/ok')
     expect( t.res.text ).to.have.equal('template says "ok"')
     expect( t.res.status ).to.equal(200)
@@ -94,7 +116,7 @@ describe('mh::int::KoaWebHandle', function(){
   it('should test a view setup', async function(){
     let o = { ok: ()=> Promise.resolve({ say: 'yabbadabba' }) }
     KoaWebHandle.views({ engine: 'mustache', path: `${__dirname}/../fixture/views`, extension: 'ms' })
-    t.app.use(KoaWebHandle.responseTemplate(o, 'ok', 'testview'))
+    t.app.use(KoaWebHandle.responseTemplateBind(o, 'ok', 'testview'))
     t.res = await t.request.get('/error')
     expect( t.res.text ).to.equal('template says "yabbadabba"')
   })

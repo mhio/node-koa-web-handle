@@ -35,10 +35,32 @@ class KoaWebHandle extends KoaGenericHandle {
   /**
    * @summary  Run a promise to return html
    */
-  static responseSend( object, method ){
-    return async function(ctx,next){
-      ctx.body = await object[method](ctx, next) // eslint-disable-line require-atomic-updates
+  static responseSend( responseFn ){
+    if (!responseFn){
+      throw new Error('responseSend handler requires an argument')
     }
+    if (typeof responseFn !== 'function'){
+      throw new Error('responseSend handler requires a function argument')
+    }
+    return async function koaWebHandleResponseSend(ctx,next){
+      ctx.body = await responseFn(ctx, next) // eslint-disable-line require-atomic-updates
+    }
+  }
+
+  /**
+   * @summary  Run a promise to return html
+   */
+  static responseSendBind( object, method ){
+    if (!object) {
+      throw new Error('responseSendBind handler requires an argument')
+    }
+    if (!method) {
+      throw new Error('responseSendBind handler requires a function argument')
+    }
+    if (object && method && typeof object[method] !== 'function') {
+      throw new Error('responseSendBind handler requires a function')
+    }
+    return this.responseSend(object[method].bind(object))
   }
 
   /**
@@ -47,7 +69,7 @@ class KoaWebHandle extends KoaGenericHandle {
    * @param {string} method       - The method to call on `object`
    * @param {object} template     - handlebars template 
    */
-  static responseTemplate( object, method, template, engine_override ){
+  static responseTemplate( responseFn, template, engine_override ){
     // Do we add an extension?
     const template_with_ext = (this.views_extension)
       ? `${template}.${this.views_extension}`
@@ -69,8 +91,8 @@ class KoaWebHandle extends KoaGenericHandle {
     const engine = engine_override || this.views_engine
 
     // Now we can create the actual handler function
-    return async function(ctx,next){
-      const variables = await object[method](ctx, next)
+    return async function koaWebHandleResponseTemplate(ctx,next){
+      const variables = await responseFn(ctx, next)
       debug('responseTemplate about to render vars', variables, template_path, engine)
       //ctx.body = yield ctx.render(template, variables)  
       // maybe merge state indead?
@@ -82,11 +104,41 @@ class KoaWebHandle extends KoaGenericHandle {
   }
 
   /**
+   * @summary  Run a promise to return html
+   */
+  static responseTemplateBind( object, method, template, options ){
+    if (!object) {
+      throw new Error('responseTemplateBind handler requires an argument')
+    }
+    if (!method) {
+      throw new Error('responseTemplateBind handler requires a method argument')
+    }
+    if (object && method && typeof object[method] !== 'function') {
+      throw new Error('responseTemplateBind handler requires a function')
+    }
+    return this.responseTemplate(object[method].bind(object), template, options)
+  }
+
+  /**
    * @summary  Handle the response with either a template or straight response
    */
-  static response( object, method, options ){
-    if ( options && options.template ) return this.responseTemplate(object, method, options.template, options.engine)
-    return this.responseSend(object, method)
+  static response( responsefn, options ){
+    if ( options && options.template ) return this.responseTemplate(responsefn, options.template, options.engine)
+    return this.responseSend(responsefn)
+  }
+
+  /**
+   * @summary  Handle the response with either a template or straight response
+   */
+  static responseBind( object, method, options ){
+    if (!object) {
+      throw new Error('responseTemplateBind handler requires an argument')
+    }
+    if (!method) {
+      throw new Error('responseTemplateBind handler requires a method argument')
+    }
+    const responsefn = object[method].bind(object)
+    return this.response(responsefn, options)
   }
 
   /**
