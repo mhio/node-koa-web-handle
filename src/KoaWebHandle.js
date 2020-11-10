@@ -15,7 +15,7 @@ class KoaWebHandle extends KoaGenericHandle {
   }
 
   /**
-   * Setup view engine and path. Effect any instances of KoaHandle as we don't have a constructor yet
+   * Setup view engine and path. Effect any instances of KoaWebHandle as we don't have a constructor yet
    */
   static views({ engine, path: views_path, extension }){
     if (extension) {
@@ -59,12 +59,12 @@ class KoaWebHandle extends KoaGenericHandle {
     // Do we have an file on disk?
     const template_file_exists = pathExists(template_path)
     if (!template || !template_file_exists) {
-      if (!this.views_path) throw new Error(`No views path has been set on KoaHandle to find [${template}]`)
+      if (!this.views_path) throw new Error(`No views path has been set on KoaWebHandle to find [${template}]`)
       throw new Error(`Couldn't find template [${template}] in [${this.views_path}]`)
     }
     // What template engine are we using for this view?
     if (!engine_override && !this.views_engine) {
-      throw new Error('No views engine has been set on KoaHandle')
+      throw new Error('No views engine has been set on KoaWebHandle')
     }
     const engine = engine_override || this.views_engine
 
@@ -130,12 +130,12 @@ class KoaWebHandle extends KoaGenericHandle {
       try {
         await next()
       } catch (error) {
-        debug('KoaHandle request caught error', error.status, error.message, error)
+        debug('KoaWebHandle request caught error', error.status, error.message, error)
         if (!error.status) error.status = 500
         if (!error.label)  error.label = 'Request Error'
         // if (!error.simple) error.simple = 'Request Error'
         if (!error.id)     error.id = getRandomBase62String(12)
-        loggerObj.error('KoaHandle caught error', error)
+        loggerObj.error('KoaWebHandle caught error', error)
         let message = error.simple || 'The request failed'
         ctx.status = error.status
         if (process.env.NODE_ENV === 'production') {

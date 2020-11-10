@@ -1,3 +1,3 @@
-const { KoaHandle, KoaHandleException} = require('./KoaHandle')
+const { KoaWebHandle } = require('./KoaWebHandle')
 
-module.exports = { KoaHandle, KoaHandleException }
+module.exports = { KoaWebHandle }
